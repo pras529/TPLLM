@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tpllm-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: tpllm-api
+  template:
+    metadata:
+      labels:
+        app: tpllm-api
+    spec:
+      containers:
+      - name: tpllm-api
+        image: your_dockerhub/tpllm-api:latest
+        ports:
+        - containerPort: 5000
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tpllm-api-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: tpllm-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
