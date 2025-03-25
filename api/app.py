@@ -1,3 +1,4 @@
+from flask_cors import CORS  # ✅ Import CORS
 from flask import Flask, request, jsonify
 from transformers import pipeline
 from traffic_data import fetch_training_data
@@ -5,6 +6,7 @@ from metrices import monitor_requests, metrics
 import os
 
 app = Flask(__name__)
+CORS(app)  # ✅ Enable CORS for all routes
 
 # Load Pipeline (GPT-2 for now, replace with Mistral once access is approved)
 text_gen = pipeline("text-generation", model="gpt2")
@@ -21,7 +23,7 @@ def predict():
         # Fallback to user input if no data
         prompt = f"Predict traffic for {data['location']} at {data['time']}"
 
-    prediction = text_gen(prompt, max_length=50, do_sample=True)
+    prediction = text_gen(prompt, max_length=50, do_sample=True, truncation=True, pad_token_id=50256)
     return jsonify({"prediction": prediction[0]['generated_text']})
 
 @app.route('/retrain', methods=['POST'])

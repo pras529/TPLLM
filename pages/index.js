@@ -13,8 +13,8 @@ export default function Home() {
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({
-    location: "Chennai",
-        time: "2025-03-25T18:00:00"
+    location: '13.08,80.27',
+        time: '2025-03-25 17:00'
   })
 })
       .then((res) => res.json())

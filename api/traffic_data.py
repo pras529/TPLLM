@@ -1,7 +1,8 @@
 from pymongo import MongoClient
-import datetime
+from datetime import datetime, UTC
 
 client = MongoClient('mongodb://localhost:27017/')
+print(client.list_database_names())
 db = client.tpllm
 collection = db.traffic_data
 
@@ -17,7 +18,7 @@ def fetch_training_data():
 
 # Example Insert
 insert_data({
-    "timestamp": datetime.datetime.utcnow(),
+    "timestamp": datetime.now(UTC),
     "location": {"lat": 13.08, "lon": 80.27},
     "speed_ratio": 0.7,
     "congestion_level": "high",
