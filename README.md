@@ -1,4 +1,7 @@
 # TPL🚦 TPLLM - Traffic Prediction Large Language Model
+
+![TPLLM Logo](public/tpllm_logo1.png)
+
 🌐 Overview
 TPLLM is an AI-driven framework designed to reduce traffic congestion and optimize vehicle flow in highly populated areas. It leverages LLMs (LLaMA-GPT style models), real-time traffic streaming data, and predictive analytics to forecast traffic conditions.
 
