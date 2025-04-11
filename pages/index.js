@@ -1,12 +1,13 @@
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
+import { Button, TextField, CircularProgress } from '@mui/material';
+import { FaMapMarkerAlt, FaClock } from 'react-icons/fa';
 
 export default function Home() {
   const [trafficData, setTrafficData] = useState(null);
-  const [location, setLocation] = useState('13.08,80.27'); // default location
+  const [location, setLocation] = useState('13.08,80.27'); // default
+  const [time, setTime] = useState('2025-03-25 17:00'); // new: dynamic time field
   const [loading, setLoading] = useState(false);
 
   const fetchTrafficPrediction = async () => {
@@ -14,13 +15,8 @@ export default function Home() {
     try {
       const response = await fetch('http://localhost:5000/predict', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          location: location,
-          time: '2025-03-25 17:00', // You can make time dynamic too if you want
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ location, time }),
       });
       const data = await response.json();
       setTrafficData(data);
@@ -30,80 +26,117 @@ export default function Home() {
     setLoading(false);
   };
 
-  // Fetch initial prediction
   useEffect(() => {
     fetchTrafficPrediction();
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-traffic text-white flex flex-col">
-      <header className="flex items-center p-6">
-        <Image src="/tpllm_logo.png" alt="TPLLM Logo" width={120} height={50} />
-        <h1 className="text-4xl font-bold ml-4">Traffic Prediction LLM (TPLLM)</h1>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-black text-white flex flex-col">
+      
+      {/* Header */}
+      <header className="flex items-center p-6 backdrop-blur-md bg-white/5 shadow-md">
+        <Image src="/tpllm_logo1.png" alt="TPLLM Logo" width={100} height={40} />
+        <h1 className="text-4xl font-extrabold ml-4 tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-cyan-400">
+          Traffic Prediction LLM
+        </h1>
       </header>
 
+      {/* Main */}
       <motion.main
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="flex flex-col items-center justify-center flex-grow space-y-10"
+        transition={{ duration: 1 }}
+        className="flex flex-col items-center justify-center flex-grow p-4 space-y-10"
       >
-        <div className="glass p-8 max-w-xl w-full text-center shadow-xl">
-          <h2 className="text-3xl mb-6">Real-Time Traffic Prediction</h2>
+        <div className="glass bg-white/10 backdrop-blur-md p-8 max-w-2xl w-full rounded-2xl shadow-2xl text-center">
+          <h2 className="text-3xl font-bold mb-6 text-cyan-300">Real-Time Traffic Prediction</h2>
 
-          {/* Input Field for Location */}
-          <div className="flex flex-col space-y-4 mb-6">
-            <TextField
-              label="Enter Location (lat,long)"
-              variant="outlined"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              sx={{
-                input: { color: 'white' },
-                label: { color: 'white' },
-                '& .MuiOutlinedInput-root': {
-                  '& fieldset': {
-                    borderColor: 'white',
+          {/* Input Fields */}
+          <div className="flex flex-col space-y-4 mb-8">
+            {/* Location Input */}
+            <div className="flex items-center gap-2">
+              <FaMapMarkerAlt className="text-fuchsia-400" />
+              <TextField
+                fullWidth
+                label="Enter Location (lat,long)"
+                variant="outlined"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                sx={{
+                  input: { color: 'white' },
+                  label: { color: 'white' },
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': { borderColor: 'white' },
+                    '&:hover fieldset': { borderColor: '#8e2de2' },
+                    '&.Mui-focused fieldset': { borderColor: '#8e2de2' },
                   },
-                  '&:hover fieldset': {
-                    borderColor: '#8e2de2',
+                }}
+              />
+            </div>
+
+            {/* Time Input */}
+            <div className="flex items-center gap-2">
+              <FaClock className="text-fuchsia-400" />
+              <TextField
+                fullWidth
+                label="Enter Time (YYYY-MM-DD HH:MM)"
+                variant="outlined"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                sx={{
+                  input: { color: 'white' },
+                  label: { color: 'white' },
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': { borderColor: 'white' },
+                    '&:hover fieldset': { borderColor: '#8e2de2' },
+                    '&.Mui-focused fieldset': { borderColor: '#8e2de2' },
                   },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#8e2de2',
-                  },
-                },
-              }}
-            />
+                }}
+              />
+            </div>
 
             {/* Predict Button */}
             <Button
+              fullWidth
               variant="contained"
               onClick={fetchTrafficPrediction}
               sx={{
                 background: 'linear-gradient(to right, #8e2de2, #4a00e0)',
                 padding: '12px 24px',
-                borderRadius: '16px',
+                borderRadius: '30px',
                 boxShadow: '0 0 20px #8e2de2',
-                color: 'white',
-                fontSize: '1rem',
+                fontWeight: 'bold',
+                fontSize: '1.1rem',
               }}
             >
-              Predict Traffic for This Location
+              Predict Traffic
             </Button>
           </div>
 
-          {/* Traffic Data */}
+          {/* Output Section */}
           {loading ? (
-            <p className="text-trafficYellow">Fetching prediction...</p>
+            <div className="flex flex-col items-center">
+              <CircularProgress sx={{ color: '#8e2de2' }} />
+              <p className="mt-4 text-trafficYellow">Fetching prediction...</p>
+            </div>
           ) : trafficData ? (
-            <pre className="text-trafficGreen text-left text-sm">{JSON.stringify(trafficData, null, 2)}</pre>
+            <motion.div
+              initial={{ y: 50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              className="bg-black/50 p-6 rounded-xl shadow-inner overflow-x-auto text-left"
+            >
+              <h3 className="text-2xl font-semibold mb-4 text-cyan-300">Prediction Result:</h3>
+              <pre className="text-green-300 text-sm whitespace-pre-wrap">{JSON.stringify(trafficData, null, 2)}</pre>
+            </motion.div>
           ) : (
             <p className="text-trafficRed">No data available.</p>
           )}
         </div>
       </motion.main>
 
-      <footer className="p-4 text-center">
-        &copy; 2025 TPLLM - Traffic Prediction Powered by LLM
+      {/* Footer */}
+      <footer className="p-4 text-center text-gray-400 text-sm">
+        &copy; 2025 TPLLM — Traffic Prediction Powered by AI
       </footer>
     </div>
   );
