@@ -2,7 +2,6 @@ from flask_cors import CORS  # ✅ Import CORS
 from flask import Flask, request, jsonify
 from transformers import pipeline
 from traffic_data import fetch_training_data
-from metrices import monitor_requests, metrics
 import os
 
 app = Flask(__name__)
@@ -35,13 +34,7 @@ def retrain():
 def health():
     return jsonify({"status": "API is running!"})
 
-@app.before_request
-def before_request():
-    monitor_requests(request.method, request.path)
 
-@app.route('/metrics')
-def metrics_endpoint():
-    return metrics()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
