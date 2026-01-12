@@ -1,4 +1,4 @@
-# TPL🚦 TPLLM - Traffic Prediction Large Language Model
+# 🚦 TPLLM - Traffic Prediction Large Language Model
 
 <img src="public/tpllm_logo1.png" alt="TPLLM Logo" width="600" height = "300"/>
 🌐 Overview
