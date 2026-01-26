@@ -109,7 +109,7 @@ export default function App() {
         </section>
       </motion.main>
 
-      <footer className="footer">© 2025 TPLLM — Flask API + React UI</footer>
+      <footer className="footer">© 2025 TPLLM</footer>
     </div>
   );
 }
