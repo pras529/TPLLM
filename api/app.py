@@ -1,40 +1,53 @@
-from flask_cors import CORS  # ✅ Import CORS
-from flask import Flask, request, jsonify
-from transformers import pipeline
-from traffic_data import fetch_training_data
-import os
+from datetime import datetime
+import random
+
+from flask import Flask, jsonify, request
+from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)  # ✅ Enable CORS for all routes
+CORS(app)
 
-# Load Pipeline (GPT-2 for now, replace with Mistral once access is approved)
-text_gen = pipeline("text-generation", model="gpt2")
 
-@app.route('/predict', methods=['POST'])
+def make_prediction(location: str, time_str: str) -> dict:
+    """Return a lightweight mock prediction for the UI."""
+    try:
+        parsed_time = datetime.strptime(time_str, "%Y-%m-%d %H:%M")
+        hour = parsed_time.hour
+    except (ValueError, TypeError):
+        parsed_time = None
+        hour = random.randint(0, 23)
+
+    base = 0.2 if hour < 6 else 0.6 if hour < 10 else 0.5 if hour < 16 else 0.8 if hour < 20 else 0.4
+    noise = random.uniform(-0.1, 0.1)
+    score = max(0.05, min(0.95, base + noise))
+
+    level = "low" if score < 0.3 else "moderate" if score < 0.6 else "high" if score < 0.8 else "severe"
+
+    return {
+        "location": location,
+        "timestamp": parsed_time.isoformat() if parsed_time else None,
+        "congestion_score": round(score, 2),
+        "congestion_level": level,
+        "advice": "Consider leaving earlier or choosing alternate routes" if level in {"high", "severe"} else "Conditions look manageable",
+    }
+
+
+@app.route("/predict", methods=["POST"])
 def predict():
-    data = request.json
-    # Optional: Pull real-time data from MongoDB
-    traffic_data = fetch_training_data()
-    if traffic_data:
-        latest = traffic_data[-1]  # Get the latest traffic record
-        prompt = f"Traffic at {latest['location']} is {latest['congestion_level']} with speed ratio {latest['speed_ratio']} and weather {latest['weather']}."
-    else:
-        # Fallback to user input if no data
-        prompt = f"Predict traffic for {data['location']} at {data['time']}"
+    payload = request.get_json(silent=True) or {}
+    location = (payload.get("location") or "").strip()
+    time_str = (payload.get("time") or "").strip()
 
-    prediction = text_gen(prompt, max_length=50, do_sample=True, truncation=True, pad_token_id=50256)
-    return jsonify({"prediction": prediction[0]['generated_text']})
+    if not location or not time_str:
+        return jsonify({"error": "location and time are required"}), 400
 
-@app.route('/retrain', methods=['POST'])
-def retrain():
-    os.system('python train_tpllm.py')
-    return jsonify({"status": "Retraining started!"})
+    return jsonify(make_prediction(location, time_str))
 
-@app.route('/health', methods=['GET'])
+
+@app.route("/health", methods=["GET"])
 def health():
-    return jsonify({"status": "API is running!"})
+    return jsonify({"status": "ok"})
 
 
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
